@@ -1,59 +1,15 @@
 <?php
 namespace Src\TableGateways;
 
+use Src\Services\DbSingleton;
+
 abstract class AbstractGateway {
 
-    private $_db = null;
+    protected $_db = null;
+    protected $_table = '';
 
-    public function __construct($db) {
-        $this->_db = $db;
-    }
-
-    public function findAll() {
-        $query = "SELECT id, name FROM forum";
-        return $this->_query($query);
-    }
-
-    public function find($id) {
-        $query =
-        "SELECT id, name ".
-        "FROM forum ".
-        "WHERE id = ?";
-
-        return $this->_query($query, array($id));
-    }
-
-    public function insert(Array $input) {
-        $query = "INSERT INTO forum (name) VALUES (:name)";
-        
-        return $this->_command(
-                $query,
-                array(
-                    "name" => $input["name"] ?? null,
-                ));
-        
-    }
-
-    public function update($identifier, Array $input) {
-        $query =
-        "UPDATE forum SET ".
-        "name = :name ".
-        "WHERE id = :id";
-
-        return $this->_command(
-                $query,
-                array(
-                    "id" => (int) $identifier,
-                    "name" => $input["name"]
-                ));
-    }
-
-    public function deleteSingle($identifier) {
-        $query = 
-            "DELETE FROM forum ".
-            "WHERE id = :id;";
-
-        return $this->_command($query, array("id" => $identifier));
+    public function __construct() {
+        $this->_db = DbSingleton::getConnection();
     }
 
     protected function _query($query,
@@ -65,6 +21,7 @@ abstract class AbstractGateway {
                 $statement->execute($params);	  
             }
             else {
+                
                 $statement = $this->_db->query($query);
             }
 

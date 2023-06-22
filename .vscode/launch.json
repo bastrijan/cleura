@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Launch built-in server and Debug",
+            "detail": "Launches PHP's built-in development server and starts debugging. (Root: \"public\")",
+            "type": "php",
+            "request": "launch",
+            "noDebug": false,
+            "runtimeArgs": [
+                "-S",
+                "localhost:8000",
+                "-t",
+                "public"
+            ],
+            "serverReadyAction": {
+                "action": "openExternally"
+            },
+            "envfile": ".env"
+        }
+    ]
+}

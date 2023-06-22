@@ -2,16 +2,18 @@
 namespace Src\Controller;
 
 use Src\TableGateways\PostGateway;
+use Src\Services\DependencyInjectionSingleton;
 
 class PostController extends AbstractController {
-    protected function _initGateway($db) {
-        $this->_Gateway = new PostGateway($db);
+    protected function _initGateway() {
+        $this->_Gateway = DependencyInjectionSingleton::getContainer()->get(PostGateway::class);
     }
 
     protected function _validate($input, $requestMethod) {
-        if ($requestMethod == "PUT") {
-            return isset($input["message"]) && $input["message"] != "";
-        }
+        return isset($input["message"]) && $input["message"] != "";
+    }
+
+    protected function _authenticate() {
         return false;
     }
 }

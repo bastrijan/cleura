@@ -1,88 +1,84 @@
 <?php
 namespace Src\TableGateways;
 
-class UserGateway {
+class UserGateway extends AbstractGateway {
 
-    private $_db = null;
-
-    public function __construct($db) {
-        $this->_db = $db;
+    public function __construct()
+    {
+        parent::__construct();
+        $this->_table = 'user';
     }
 
     public function findAll() {
-        $query = "SELECT id, name, admin FROM user";
+        $query = 'SELECT id, name, admin FROM ' . $this->_table;
         return $this->_query($query);
     }
 
     public function find($id) {
         $query =
-        "SELECT id, name, admin ".
-        "FROM user ".
-        "WHERE id = ?";
+        'SELECT id, name, admin '.
+        'FROM ' . $this->_table . ' '.
+        'WHERE id = ?';
 
         return $this->_query($query, array($id));
     }
 
+    public function findByUsername($username) {
+        $query =
+        'SELECT id, name, admin, password '.
+        'FROM ' . $this->_table . ' '.
+        'WHERE name = ?';
+
+        return $this->_query($query, array($username));
+    }
+
     public function insert(Array $input) {
-        throw(new \Exception("To be implemented, for admin user only"));
+        throw(new \Exception('To be implemented, for admin user only'));
 
         // Hash password
-        $passHash = password_hash($input["password"],
-                    PASSWORD_DEFAULT,
-                    [ "cost" => 10 ]);
+        $passHash = $this->passHashing($input['password']);
 
-        $query = "INSERT INTO user(name, password, admin) VALUES(:name, :password, :admin)";
+        $query = 'INSERT INTO ' . $this->_table . ' (name, password, admin) VALUES(:name, :password, :admin)';
         return $this->_command($query,
                                array(
-                               "admin" => (int) @$input["admin"] ?? 0,
-                               "name" => $input["name"],
-                               "password" => $passHash,
+                               'admin' => (int) @$input['admin'] ?? 0,
+                               'name' => $input['name'],
+                               'password' => $passHash,
                             ));
     }
 
+    private function passHashing($password): string {
+        return password_hash($password,
+                             PASSWORD_DEFAULT,
+                             [ 'cost' => 10 ]);
+    }
+
     public function update($identifier, Array $input) {
-        throw(new \Exception("To be implemented, for admin only"));
+        throw(new \Exception('To be implemented, for admin only'));
+
+        $passHash = $this->passHashing($input['password']);
+
+        $query = 'UPDATE ' . $this->_table . ' SET name = :name, ' . 
+        'password = :password ' .
+        'WHERE id = :id';
+
+        return $this->_command(
+            $query,
+            array(
+                'id' => (int) $identifier,
+                'name' => $input['name'],
+                'password' => $passHash
+            ));      
     }
 
     public function deleteSingle($identifier) {
-        throw(new \Exception("To be implemented, for admin only"));
-    }
 
-    protected function _query($query,
-                              $params = null,
-                              $isCommand = false) {
-        try {
-            if ($params) {
-                $statement = $this->_db->prepare($query);
-                $statement->execute($params);	  
-            }
-            else {
-                $statement = $this->_db->query($query);
-            }
+        throw(new \Exception('To be implemented, for admin only'));
 
-            if ($isCommand) {
-                return $statement->rowCount();
-            }
-            else {
-                $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
-                return $result;
-            }
-        }
-        catch (\PDOException $e) {
-	        exit($e->getMessage());
-        }      
-    }
+        $query = 
+        'DELETE FROM ' . $this->_table . ' '.
+        'WHERE id = :id;';
 
-    protected function _command($query, $params) {
-        return $this->_query($query, $params, true);
-    }
-
-    /**
-     * Utility method for validating if supplied password is valid for a password hash
-     * @param string $password The password
-     * @param string $hashedPassword The password hash (ie. what is stored in database: simple_forum.user.password field)
-     **/
-    private function _validatePassword($password, $hashedPassword) {
-            return password_verify($password, $hashedPassword);
+        return $this->_command($query, array('id' => $identifier));
     }
 }

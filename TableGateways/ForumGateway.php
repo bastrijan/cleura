@@ -1,87 +1,58 @@
 <?php
 namespace Src\TableGateways;
 
-class ForumGateway {
-
-    private $_db = null;
-
-    public function __construct($db) {
-        $this->_db = $db;
+class ForumGateway extends AbstractGateway {
+    
+    public function __construct()
+    {
+        parent::__construct();
+        $this->_table = 'forum';
     }
 
     public function findAll() {
-        $query = "SELECT id, name FROM forum";
+        $query = 'SELECT id, name FROM ' . $this->_table;
         return $this->_query($query);
     }
 
     public function find($id) {
         $query =
-        "SELECT id, name ".
-        "FROM forum ".
-        "WHERE id = ?";
+        'SELECT id, name '.
+        'FROM ' . $this->_table . ' ' .
+        'WHERE id = ?';
 
         return $this->_query($query, array($id));
     }
 
     public function insert(Array $input) {
-        $query = "INSERT INTO forum (name) VALUES (:name)";
+        $query = 'INSERT INTO ' . $this->_table . ' (name) VALUES (:name)';
         
         return $this->_command(
                 $query,
                 array(
-                    "name" => $input["name"] ?? null,
+                    'name' => $input['name'] ?? null,
                 ));
         
     }
 
     public function update($identifier, Array $input) {
         $query =
-        "UPDATE forum SET ".
-        "name = :name ".
-        "WHERE id = :id";
+        'UPDATE ' . $this->_table . ' SET '.
+        'name = :name '.
+        'WHERE id = :id';
 
         return $this->_command(
                 $query,
                 array(
-                    "id" => (int) $identifier,
-                    "name" => $input["name"]
+                    'id' => (int) $identifier,
+                    'name' => $input['name']
                 ));
     }
 
     public function deleteSingle($identifier) {
         $query = 
-            "DELETE FROM forum ".
-            "WHERE id = :id;";
+            'DELETE FROM ' . $this->_table . ' '.
+            'WHERE id = :id';
 
-        return $this->_command($query, array("id" => $identifier));
+        return $this->_command($query, array('id' => $identifier));
     }
-
-    protected function _query($query,
-                              $params = null,
-                              $isCommand = false) {
-        try {
-            if ($params) {
-                $statement = $this->_db->prepare($query);
-                $statement->execute($params);	  
-            }
-            else {
-                $statement = $this->_db->query($query);
-            }
-
-            if ($isCommand) {
-                return $statement->rowCount();
-            }
-            else {
-                $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
-                return $result;
-            }
-        }
-        catch (\PDOException $e) {
-            exit($e->getMessage());
-        }      
-    }
-
-    protected function _command($query, $params) {
-      return $this->_query($query, $params, true);
-    }  
 }

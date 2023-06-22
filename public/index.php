@@ -1,8 +1,10 @@
 <?php
+
+declare(strict_types=1);
+
 require "../bootstrap.php";
-use Src\Controller\ForumController;
-use Src\Controller\PostController;
-use Src\Controller\UserController;
+use Src\Services\ControllerFactory;
+use Src\Interfaces\HttpResponseConstantsInterface;
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
@@ -14,7 +16,7 @@ $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $uri = explode( '/', $uri );
 
 if (!$uri[1]) {
-    header("HTTP/1.1 404 Not Found");
+    header(HttpResponseConstantsInterface::HTTP_404);
     exit();
 }
 
@@ -23,30 +25,18 @@ $identifier = isset($uri[2]) ? $uri[2] : null;
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
 try {
-    $Controller = null;  
-    switch ($uri[1]) {
-    case "forum":
-        $Controller = new ForumController($dbConnection, $requestMethod, $identifier);
-        break;
-    case "post":
-        $Controller = new PostController($dbConnection, $requestMethod, $identifier);
-        break;
-    case "user":
-        $Controller = new UserController($dbConnection, $requestMethod, $identifier);
-        break;    
-    default:
-        header("HTTP/1.1 404 Not Found");
-        exit();
-        break;
-    }
- 
-    // pass the request method and variables to the Controller and process the HTTP request:
+    $Controller = ControllerFactory::create($uri[1], $requestMethod, $identifier); 
+
+    if(null === $Controller) {
+        header(HttpResponseConstantsInterface::HTTP_404);
+    } 
+
     $Controller->processRequest();
 }
 catch (Exception $e) {
     $code = 500;
     $message = "Internal server error";
-    header("HTTP/1.1 500 Server Error");  
+    header(HttpResponseConstantsInterface::HTTP_500);  
     echo json_encode(array("error" => array("code" => $code, "message" => $message)));
     exit();
 }
