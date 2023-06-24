@@ -23,17 +23,16 @@ class UserGateway extends AbstractGateway {
         return $this->_query($query, array($id));
     }
 
-    public function findByUsername($username) {
+    public function findByName($name) {
         $query =
         'SELECT id, name, admin, password '.
         'FROM ' . $this->_table . ' '.
         'WHERE name = ?';
 
-        return $this->_query($query, array($username));
+        return $this->_query($query, array($name));
     }
 
     public function insert(Array $input) {
-        throw(new \Exception('To be implemented, for admin user only'));
 
         // Hash password
         $passHash = $this->passHashing($input['password']);
@@ -54,12 +53,12 @@ class UserGateway extends AbstractGateway {
     }
 
     public function update($identifier, Array $input) {
-        throw(new \Exception('To be implemented, for admin only'));
 
         $passHash = $this->passHashing($input['password']);
 
         $query = 'UPDATE ' . $this->_table . ' SET name = :name, ' . 
-        'password = :password ' .
+        'password = :password, ' .
+        'admin = :admin ' .
         'WHERE id = :id';
 
         return $this->_command(
@@ -67,14 +66,12 @@ class UserGateway extends AbstractGateway {
             array(
                 'id' => (int) $identifier,
                 'name' => $input['name'],
-                'password' => $passHash
+                'password' => $passHash,
+                'admin' => $input['admin']
             ));      
     }
 
     public function deleteSingle($identifier) {
-
-        throw(new \Exception('To be implemented, for admin only'));
-
         $query = 
         'DELETE FROM ' . $this->_table . ' '.
         'WHERE id = :id;';

@@ -20,12 +20,13 @@ if (!$uri[1]) {
     exit();
 }
 
-$identifier = isset($uri[2]) ? $uri[2] : null;
+$identifier = $uri[2] ?? null;
+$filter = $uri[3] ?? null;
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
 try {
-    $Controller = ControllerFactory::create($uri[1], $requestMethod, $identifier); 
+    $Controller = ControllerFactory::create($uri[1], $requestMethod, $identifier, $filter); 
 
     if(null === $Controller) {
         header(HttpResponseConstantsInterface::HTTP_404);

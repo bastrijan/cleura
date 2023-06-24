@@ -14,6 +14,6 @@ class PostController extends AbstractController {
     }
 
     protected function _authenticate() {
-        return false;
+        return true;
     }
 }

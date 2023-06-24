@@ -5,7 +5,7 @@ use Src\Controller\AbstractController;
 
 Class ControllerFactory 
 {
-    public static function create($apiEndPoint = '', $requestMethod, $identifier): null|AbstractController
+    public static function create($apiEndPoint = '', $requestMethod, $identifier, $filter = null): null|AbstractController
     {
         $className = 'Src\Controller\\' . ucfirst(strtolower($apiEndPoint)) . 'Controller'::class;
 
@@ -13,6 +13,6 @@ Class ControllerFactory
             return null;
         }
         
-        return new $className($requestMethod, $identifier);
+        return new $className($requestMethod, $identifier, $filter);
     }
 }

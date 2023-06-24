@@ -9,14 +9,21 @@ class PostGateway extends AbstractGateway {
         $this->_table = 'post';
     }
 
-    public function findAll() {
-        $query = 'SELECT id, forum_id, user_id, message, created FROM ' . $this->_table;
-        return $this->_query($query);
+    public function findAll($filter = null, $id = null) {
+        $query = 'SELECT id, forum_id, user_id, message, created, updated FROM ' . $this->_table;
+
+        $params = null;
+        if(null !== $filter) {
+            $query .= ' WHERE ' . $filter . '_id = ?';
+            $params = [$id];
+        }
+
+        return $this->_query($query, $params);
     }
 
     public function find($id) {
         $query =
-        'SELECT id, forum_id, user_id, message, created '.
+        'SELECT id, forum_id, user_id, message, created, updated '.
         'FROM ' . $this->_table . ' '.
         'WHERE id = ?';
 

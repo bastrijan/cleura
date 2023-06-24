@@ -13,10 +13,12 @@ abstract class AbstractController {
       protected $_requestMethod;
       protected $_identifier;
       protected $_Gateway;
+      protected $_filter;
 
-      public function __construct($requestMethod, $identifier) {
+      public function __construct($requestMethod, $identifier, $filter) {
             $this->_requestMethod = $requestMethod;
             $this->_identifier = $identifier;
+            $this->_filter = $filter;
 
             $this->_initGateway();
       }
@@ -25,7 +27,10 @@ abstract class AbstractController {
 
             switch ($this->_requestMethod) {
                   case 'GET':
-                        if ($this->_identifier) {
+                        if($this->_filter) {
+                              $response = $this->_getAll($this->_filter, $this->_identifier);
+                        }
+                        elseif ($this->_identifier) {
                               $response = $this->_getSingle($this->_identifier);
                         }
                         else {
@@ -36,6 +41,7 @@ abstract class AbstractController {
                         $response = $this->_createFromRequest();
                         break;
                   case 'PUT':
+                  case 'PATCH':
                         $response = $this->_updateFromRequest($this->_identifier);
                         break;
                   case 'DELETE':
@@ -52,8 +58,8 @@ abstract class AbstractController {
             }
       }
 
-      protected function _getAll() {
-            $result = $this->_Gateway->findAll();
+      protected function _getAll($filter = null, $identifier = null) {
+            $result = $this->_Gateway->findAll($filter, $identifier);
             $response['status_code_header'] = HttpResponseConstantsInterface::HTTP_200;
             $response['body'] = json_encode($result);
             return $response;
@@ -99,7 +105,7 @@ abstract class AbstractController {
             }
             $ret = $this->_Gateway->update($identifier, $input);
             $response['status_code_header'] = HttpResponseConstantsInterface::HTTP_200;
-            $response['body'] = $ret;
+            $response['body'] = null;
             return $response;
       }
 

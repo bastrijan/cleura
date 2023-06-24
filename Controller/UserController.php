@@ -11,20 +11,27 @@ class UserController extends AbstractController {
     }
 
     protected function _validate($input, $requestMethod) {
+        
         return
             (isset($input["name"]) && $input["name"] != "") &&
             (isset($input["password"]) && $input["password"]);
     }
 
     protected function _authenticate() {
-        $username = $_SERVER['HTTP_USERNAME'] ?? null;
+        $name = $_SERVER['HTTP_NAME'] ?? null;
         $password = $_SERVER['HTTP_PASSWORD'] ?? null;
-        $result = $this->_Gateway->getPassword($username);
-        
+
+        $result = (null !== $name ? $this->_Gateway->findByName($name) : false);
+
         if(!$result) {
             return false;
         }
 
-        return Helper::validateHashedPassword($password, $result[0]["password"]);
+        if(!Helper::validateHashedPassword($password, $result[0]["password"]))
+        {
+            return false;
+        }
+
+        return (1 === $result[0]["admin"] ? true : false) ;
     }
 }
